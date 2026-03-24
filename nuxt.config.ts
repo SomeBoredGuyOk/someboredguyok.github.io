@@ -11,10 +11,10 @@ export default defineNuxtConfig({
     // This forces the import of Prose components
     mdc: true 
   },
-  app: {
-    baseURL: "/",
-    buildAssetsDir: 'assets',
-  },
+  // app: {
+  //   baseURL: "/",
+  //   buildAssetsDir: 'assets',
+  // },
   icon: {
     clientBundle: {
  
