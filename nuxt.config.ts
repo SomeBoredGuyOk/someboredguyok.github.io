@@ -15,4 +15,12 @@ export default defineNuxtConfig({
     baseURL: "/",
     buildAssetsDir: 'assets',
   },
+  icon: {
+    clientBundle: {
+ 
+      scan: true,
+ 
+      sizeLimitKb: 256,
+    },
+  },
 })
