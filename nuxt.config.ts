@@ -17,5 +17,8 @@ export default defineNuxtConfig({
         // "i-lucide:copy-check"
       ]
     }
+  },
+  app: {
+    baseURL: 'someboredguyok.github.io'
   }
 })
