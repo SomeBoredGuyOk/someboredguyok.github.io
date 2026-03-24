@@ -21,6 +21,11 @@ export default defineNuxtConfig({
       scan: true,
  
       sizeLimitKb: 256,
+      icons: [
+        'lucide:check',
+        'lucide:user',
+        'lucide:settings'
+      ]
     },
   },
 })
