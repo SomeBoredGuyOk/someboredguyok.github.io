@@ -11,14 +11,4 @@ export default defineNuxtConfig({
     // This forces the import of Prose components
     mdc: true 
   },
-  icon: {
-    clientBundle: {
-      icons: [
-        // "i-lucide:copy-check"
-      ]
-    }
-  },
-  app: {
-    baseURL: 'someboredguyok.github.io'
-  }
 })
