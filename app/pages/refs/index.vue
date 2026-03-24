@@ -39,7 +39,7 @@ function refRating(ref: RefsCollectionItem) {
 const selectedTags = ref<string[]>([])
 const bookend = '```'
 const selectedRefs = computed(() => {
-  return Array.from((refMap.value.entries() || []).filter(entry => entry[1]).map(entry => entry[0]))
+  return Array.from((refMap.value.entries())).filter(entry => entry[1]).map(entry => entry[0])
 })
 const exportText = computed(() => {
   if (selectedRefs.value.length == 0) return `
