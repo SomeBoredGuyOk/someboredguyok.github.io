@@ -154,7 +154,10 @@ function urlToIcon(url: string) {
         <UDropdownMenu
           v-for="model in currentModels"
           :content="{
-            align: 'start'
+            align: 'start',
+          }"
+          :ui="{
+            // viewport: 'max-w-screen left-0 right-0'
           }"
           :items="([
             ...(model.names.slice(1).length > 0 ? [
