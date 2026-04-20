@@ -7,7 +7,7 @@ const { data: page } = await useAsyncData(route.path, () => {
 <template>
   <UContainer>
     <div class="h-200 relative">
-      <RedgifsVideo v-if="page?.key" :path="page.key"></RedgifsVideo>
+      <!-- <RedgifsVideo v-if="page?.key" :path="page.key"></RedgifsVideo> -->
     </div>
   </UContainer>
 </template>

@@ -128,7 +128,7 @@ function urlToIcon(url: string) {
               :data-selected="refMap.get(ref.title)"
             >
               <UCheckbox
-                :default-value="refMap.get(ref.title)"
+                :model-value="refMap.get(ref.title)"
                 variant="card"
                 :ui="{
                   root: 'bg-default/50 p-2 size-9 flex justify-center items-center backdrop-blur-sm border-inverted',
@@ -150,7 +150,7 @@ function urlToIcon(url: string) {
     :fullscreen="isMobile"
   >
     <template #header>
-      <div class="flex w-full gap-2">
+      <div class="flex w-full gap-2 items-center">
         <UDropdownMenu
           v-for="model in currentModels"
           :content="{
@@ -257,6 +257,11 @@ function urlToIcon(url: string) {
             </div>
           </template> -->
         </UDropdownMenu>
+        <UCheckbox
+          size="xl"
+          :model-value="refMap.get(currentRef?.title || '')"
+          @update:model-value="(value) => console.log(refMap.set(currentRef?.title || '', Boolean(value)))"
+        ></UCheckbox>
         <!-- <UPopover
           v-for="model in currentModels"
           :content="{
