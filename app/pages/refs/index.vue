@@ -2,14 +2,20 @@
 import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
-
+const route = useRoute()
 onMounted(() => {
-  const hash = location.hash.slice(1)
+  const hash = route.hash.slice(1)
   if (hash != '') {
     currentRef.value = refs.value?.find(({title}) => title == hash)
     console.log(hash)
   }
 })
+// watch(() => location.hash, (hash) => {
+//   if (hash != '') {
+//     currentRef.value = refs.value?.find(({title}) => title == hash)
+//     console.log(hash)
+//   }
+// }, {immediate: true})
 const { data: refs } = await useAsyncData("all-refs", () => {
   return queryCollection("refs").order("date", "DESC").all()
 })
