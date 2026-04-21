@@ -4,14 +4,14 @@ import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 const route = useRoute()
 const router = useRouter()
-onMounted(async () => {
-  // await nextTick()
-  await router.isReady()
-  const hash = route.hash.slice(1)
-  if (import.meta.client ?? hash != '') {
-    currentRef.value = refs.value?.find(({title}) => title == hash)
-    console.log(hash)
-  }
+onMounted(() => {
+  setTimeout(() => {
+    const hash = window.location.hash.slice(1)
+    if (hash != '') {
+      currentRef.value = refs.value?.find(({title}) => title == hash)
+      console.log(hash)
+    }
+  }, 0)
 })
 // watch(() => route.hash, (hash) => {
 //   if (hash != '') {
