@@ -5,9 +5,11 @@ import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 const route = useRoute()
 onMounted(() => {
   // await nextTick()
-  if (searchId.value != '') {
-    currentRef.value = refs.value?.find(({title}) => title == searchId.value)
-    console.log(searchId.value)
+  const params = new URLSearchParams(window.location.search)
+  const id = params.get('id')
+  if (id != '') {
+    currentRef.value = refs.value?.find(({title}) => title == id)
+    console.log(id)
   }
 })
 const searchId = computed<string>({
