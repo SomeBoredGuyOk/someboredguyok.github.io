@@ -3,14 +3,15 @@ import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 const route = useRoute()
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   const hash = route.hash.slice(1)
   if (hash != '') {
     currentRef.value = refs.value?.find(({title}) => title == hash)
     console.log(hash)
   }
 })
-// watch(() => location.hash, (hash) => {
+// watch(() => route.hash, (hash) => {
 //   if (hash != '') {
 //     currentRef.value = refs.value?.find(({title}) => title == hash)
 //     console.log(hash)
