@@ -3,18 +3,35 @@ import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 
+onMounted(() => {
+  const hash = location.hash.slice(1)
+  if (hash != '') {
+    currentRef.value = refs.value?.find(({title}) => title == hash)
+    console.log(hash)
+  }
+})
 const { data: refs } = await useAsyncData("all-refs", () => {
   return queryCollection("refs").order("date", "DESC").all()
 })
 const { data: models } = await useAsyncData("all-models", () => {
   return queryCollection("models").order("names", "DESC").all()
 })
-const refMap = ref(new Map<string, boolean>(refs.value?.map(ref => [ref.title, false])))
+const refMap = ref(new Map<RefsCollectionItem|undefined, boolean>(refs.value?.map(ref => [ref, false])))
 const currentRef = ref<RefsCollectionItem>()
-const open = ref(false)
+const modalOpen1 = ref(false)
+const modalOpen = computed<boolean>({
+  get() {
+    return currentRef.value != undefined
+  },
+  set(value) {
+    if (value == false) {
+      currentRef.value = undefined
+    }
+  }
+})
 function viewRef(ref: RefsCollectionItem) {
   currentRef.value = ref
-  open.value = true
+  modalOpen.value = true
 }
 const tags = computed(() => {
   return [...new Set(refs.value?.flatMap(ref => refTags(ref)))].sort()
@@ -39,13 +56,20 @@ function refRating(ref: RefsCollectionItem) {
 const selectedTags = ref<string[]>([])
 const bookend = '```'
 const selectedRefs = computed(() => {
-  return Array.from((refMap.value.entries())).filter(entry => entry[1]).map(entry => entry[0])
+  return Array.from((refMap.value.entries())).filter(entry => entry[0] != undefined).filter(entry => entry[1]).map(entry => entry[0]) as RefsCollectionItem[]
 })
+// const exportText = computed(() => {
+//   if (selectedRefs.value.length == 0) return `
+// `
+//   return selectedRefs.value.reduce((prev, curr, i) => prev + (i + 1) + '.' + `
+// ` + 'https://www.redgifs.com/watch/' + curr.toLowerCase() + `
+// `, ``)
+// })
 const exportText = computed(() => {
   if (selectedRefs.value.length == 0) return `
 `
-  return selectedRefs.value.reduce((prev, curr, i) => prev + (i + 1) + '.' + `
-` + 'https://www.redgifs.com/watch/' + curr.toLowerCase() + `
+  return selectedRefs.value.reduce((prev, curr, i) => prev + (i + 1) + '. ' + (curr.models?.map(model => models.value?.find(({title}) => title == model)?.names[0]).filter(model => model != undefined).join(', ') || '') + `
+` + location.origin + '/refs#' + curr.title + `
 `, ``)
 })
 const breakpoints = useBreakpoints(breakpointsTailwind)
@@ -93,6 +117,9 @@ const urlIconMap = new Map<string|undefined, string>([
 function urlToIcon(url: string) {
   return urlIconMap.get(new URL(url).hostname) || "lucide:globe"
 }
+watch(currentRef, () => {
+  location.hash = currentRef.value?.title || ''
+})
 </script>
 <template>
   <UMain>
@@ -125,16 +152,16 @@ function urlToIcon(url: string) {
           </div> -->
           <div class="flex items-start justify-end w-full">
             <div class=" m-1 group-hover:opacity-100 data-[selected=true]:opacity-100 sm:opacity-0 transition-opacity"
-              :data-selected="refMap.get(ref.title)"
+              :data-selected="refMap.get(ref)"
             >
               <UCheckbox
-                :model-value="refMap.get(ref.title)"
+                :model-value="refMap.get(ref)"
                 variant="card"
                 :ui="{
                   root: 'bg-default/50 p-2 size-9 flex justify-center items-center backdrop-blur-sm border-inverted',
                   base: 'data-[state=unchecked]:ring-inverted'
                 }"
-                @update:model-value="(value) => console.log(refMap.set(ref.title, Boolean(value)))"
+                @update:model-value="(value) => console.log(refMap.set(ref, Boolean(value)))"
               ></UCheckbox>
             </div>
           </div>
@@ -143,7 +170,7 @@ function urlToIcon(url: string) {
       </div>
     </div>
   </UMain>
-  <UModal v-model:open="open"
+  <UModal v-model:open="modalOpen"
     :ui="{
       content: ' sm:h-dvh sm:max-w-2/3 sm:min-w-100',
     }"
@@ -259,8 +286,8 @@ function urlToIcon(url: string) {
         </UDropdownMenu>
         <UCheckbox
           size="xl"
-          :model-value="refMap.get(currentRef?.title || '')"
-          @update:model-value="(value) => console.log(refMap.set(currentRef?.title || '', Boolean(value)))"
+          :model-value="refMap.get(currentRef)"
+          @update:model-value="(value) => console.log(refMap.set(currentRef, Boolean(value)))"
         ></UCheckbox>
         <!-- <UPopover
           v-for="model in currentModels"
@@ -320,7 +347,7 @@ function urlToIcon(url: string) {
             {
               icon: 'lucide:x',
               click: () => {
-                open = false
+                modalOpen = false
               }
             },
           ]"
