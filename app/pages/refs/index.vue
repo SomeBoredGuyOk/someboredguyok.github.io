@@ -3,10 +3,10 @@ import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 const route = useRoute()
-onMounted(async () => {
-  await nextTick()
+onMounted(() => {
+  // await nextTick()
   const hash = route.hash.slice(1)
-  if (hash != '') {
+  if (import.meta.client ?? hash != '') {
     currentRef.value = refs.value?.find(({title}) => title == hash)
     console.log(hash)
   }
@@ -177,198 +177,200 @@ watch(currentRef, () => {
       </div>
     </div>
   </UMain>
-  <UModal v-model:open="modalOpen"
-    :ui="{
-      content: ' sm:h-dvh sm:max-w-2/3 sm:min-w-100',
-    }"
-    :fullscreen="isMobile"
-  >
-    <template #header>
-      <div class="flex w-full gap-2 items-center">
-        <UDropdownMenu
-          v-for="model in currentModels"
-          :content="{
-            align: 'start',
-          }"
-          :ui="{
-            // viewport: 'max-w-screen left-0 right-0'
-          }"
-          :items="([
-            ...(model.names.slice(1).length > 0 ? [
-              {
-                type: 'label',
-                slot: 'aka' as const,
-              },
-              {
-                type: 'separator',
-              },
-            ] : []),
-            ...(model.rating ? [
-              {
-                type: 'label',
-                slot: 'rating' as const,
-              },
-              {
-                type: 'separator',
-              }
-            ] : []),
-            {
-              type: 'label',
-              label: `Links (${model.links?.length || 0})`
-            },
-            ...((model.links || []).map(link => ({
-              to: link,
-              label: urlToLabel(link),
-              color: 'primary',
-              trailing: 'lucide:arrow-up-right',
-              target: '_blank',
-              icon: urlToIcon(link),
-            }))),
-            {
-              type: 'separator'
-            },
-            {
-              type: 'label',
-              label: 'Tags',
-            },
-            ...((model.tags || []).sort().map(tag => ({
-              label: tag,
-              icon: 'lucide:hash',
-              slot: 'tag' as const,
-              // onSelect: () => {
-              //   if (selectedTags.indexOf(tag) == -1) selectedTags.push(tag)
-              // },
-              type: 'checkbox',
-              checked: selectedTags.indexOf(tag) > -1,
-              onUpdateChecked: (checked) => {
-                if (checked) {
-                  selectedTags.push(tag)
-                } else {
-                  selectedTags.splice(selectedTags.indexOf(tag), 1)
+  <ClientOnly>
+    <UModal v-model:open="modalOpen"
+      :ui="{
+        content: ' sm:h-dvh sm:max-w-2/3 sm:min-w-100',
+      }"
+      :fullscreen="isMobile"
+    >
+      <template #header>
+        <div class="flex w-full gap-2 items-center">
+          <UDropdownMenu
+            v-for="model in currentModels"
+            :content="{
+              align: 'start',
+            }"
+            :ui="{
+              // viewport: 'max-w-screen left-0 right-0'
+            }"
+            :items="([
+              ...(model.names.slice(1).length > 0 ? [
+                {
+                  type: 'label',
+                  slot: 'aka' as const,
+                },
+                {
+                  type: 'separator',
+                },
+              ] : []),
+              ...(model.rating ? [
+                {
+                  type: 'label',
+                  slot: 'rating' as const,
+                },
+                {
+                  type: 'separator',
                 }
-              }
-            } as DropdownMenuItem)))
-          ] as DropdownMenuItem[])"
-        >
-          <UButton
-            :label="model.names[0]"
-            variant="subtle"
-            color="neutral"
-          ></UButton>
-          <template #aka>
-            <div class="flex divide-accented divide-x *:px-2 *:first:ps-0 items-center *:last:pe-0">
-              <div class="font-bold text-dimmed">AKA</div>
-              <div
-                v-for="name in model.names.slice(1)"
-              >
-                {{ name }}
-              </div>
-            </div>
-          </template>
-          <template #rating>
-            <div class="w-full flex gap-2 items-center divide-x divide-accented">
-              <div class="pe-2 text-dimmed font-bold">Rating</div>
-              <UBadge
-                variant="subtle"
-              >
-                <div v-if="model.rating" class="flex gap-1 *:size-4">
-                  <UIcon
-                    name="material-symbols:star"
-                    v-for="star in model.rating"
-                  ></UIcon>
-                  <UIcon
-                    name="material-symbols:star-outline"
-                    v-for="star in 5 - model.rating"
-                  ></UIcon>
-                </div>
-              </UBadge>
-            </div>
-          </template>
-          <!-- <template #tag-trailing>
-            <div class="flex text-muted items-center gap-1 group-hover:opacity-100 sm:opacity-0 transition-opacity">
-              <UIcon name="lucide:funnel-plus" class="size-5"></UIcon>
-              Add to filter
-            </div>
-          </template> -->
-        </UDropdownMenu>
-        <UCheckbox
-          size="xl"
-          :model-value="refMap.get(currentRef)"
-          @update:model-value="(value) => console.log(refMap.set(currentRef, Boolean(value)))"
-        ></UCheckbox>
-        <!-- <UPopover
-          v-for="model in currentModels"
-          :content="{
-            align: 'start'
-          }"
-        >
-          <UButton
-            :label="model.names[0]"
-            variant="subtle"
-            color="neutral"
-          ></UButton>
-          <template #content>
-            <div class="flex gap-2 p-2 flex-wrap">
-              <UFieldGroup v-if="model.names.slice(1).length > 0">
-                <UBadge
-                  label="AKA"
-                  color="neutral"
-                  variant="outline"
-                  :ui="{
-                    label: 'font-black text-dimmed'
-                  }"
-                ></UBadge>
-                <UBadge
+              ] : []),
+              {
+                type: 'label',
+                label: `Links (${model.links?.length || 0})`
+              },
+              ...((model.links || []).map(link => ({
+                to: link,
+                label: urlToLabel(link),
+                color: 'primary',
+                trailing: 'lucide:arrow-up-right',
+                target: '_blank',
+                icon: urlToIcon(link),
+              }))),
+              {
+                type: 'separator'
+              },
+              {
+                type: 'label',
+                label: 'Tags',
+              },
+              ...((model.tags || []).sort().map(tag => ({
+                label: tag,
+                icon: 'lucide:hash',
+                slot: 'tag' as const,
+                // onSelect: () => {
+                //   if (selectedTags.indexOf(tag) == -1) selectedTags.push(tag)
+                // },
+                type: 'checkbox',
+                checked: selectedTags.indexOf(tag) > -1,
+                onUpdateChecked: (checked) => {
+                  if (checked) {
+                    selectedTags.push(tag)
+                  } else {
+                    selectedTags.splice(selectedTags.indexOf(tag), 1)
+                  }
+                }
+              } as DropdownMenuItem)))
+            ] as DropdownMenuItem[])"
+          >
+            <UButton
+              :label="model.names[0]"
+              variant="subtle"
+              color="neutral"
+            ></UButton>
+            <template #aka>
+              <div class="flex divide-accented divide-x *:px-2 *:first:ps-0 items-center *:last:pe-0">
+                <div class="font-bold text-dimmed">AKA</div>
+                <div
                   v-for="name in model.names.slice(1)"
-                  :label="name"
-                  color="neutral"
-                  variant="outline"
-                  size="lg"
-                ></UBadge>
-              </UFieldGroup>
-              <UButton
-                v-for="link in model.links"
-                :to="link"
-                variant="soft"
-                target="_blank"
-                :label="urlToLabel(link)"
-                trailing-icon="lucide:arrow-up-right"
-              ></UButton>
-            </div>
-          </template>
-        </UPopover> -->
-      </div>
-      <div class="flex justify-end gap-2">
-        <UButton
-          variant="ghost"
-          color="neutral"
-          v-for="button in [
-            {
-              icon: 'lucide:chevron-left',
-              click: () => moveCurrentRefBy(-1),
-            },
-            {
-              icon: 'lucide:chevron-right',
-              click: () => moveCurrentRefBy(1),
-            },
-            {
-              icon: 'lucide:x',
-              click: () => {
-                modalOpen = false
-              }
-            },
-          ]"
-          v-bind="button"
-          @click="button.click"
-        ></UButton>
-      </div>
-    </template>
-    <template #body>
-      <div class="relative h-full">
-        <iframe :src='`https://www.redgifs.com/ifr/${currentRef?.title}`' frameBorder='0' scrolling='no' width='100%' height='100%' style='position:absolute; top:0; left:0;' allowFullScreen></iframe>
-      </div>
-    </template>
-  </UModal>
+                >
+                  {{ name }}
+                </div>
+              </div>
+            </template>
+            <template #rating>
+              <div class="w-full flex gap-2 items-center divide-x divide-accented">
+                <div class="pe-2 text-dimmed font-bold">Rating</div>
+                <UBadge
+                  variant="subtle"
+                >
+                  <div v-if="model.rating" class="flex gap-1 *:size-4">
+                    <UIcon
+                      name="material-symbols:star"
+                      v-for="star in model.rating"
+                    ></UIcon>
+                    <UIcon
+                      name="material-symbols:star-outline"
+                      v-for="star in 5 - model.rating"
+                    ></UIcon>
+                  </div>
+                </UBadge>
+              </div>
+            </template>
+            <!-- <template #tag-trailing>
+              <div class="flex text-muted items-center gap-1 group-hover:opacity-100 sm:opacity-0 transition-opacity">
+                <UIcon name="lucide:funnel-plus" class="size-5"></UIcon>
+                Add to filter
+              </div>
+            </template> -->
+          </UDropdownMenu>
+          <UCheckbox
+            size="xl"
+            :model-value="refMap.get(currentRef)"
+            @update:model-value="(value) => console.log(refMap.set(currentRef, Boolean(value)))"
+          ></UCheckbox>
+          <!-- <UPopover
+            v-for="model in currentModels"
+            :content="{
+              align: 'start'
+            }"
+          >
+            <UButton
+              :label="model.names[0]"
+              variant="subtle"
+              color="neutral"
+            ></UButton>
+            <template #content>
+              <div class="flex gap-2 p-2 flex-wrap">
+                <UFieldGroup v-if="model.names.slice(1).length > 0">
+                  <UBadge
+                    label="AKA"
+                    color="neutral"
+                    variant="outline"
+                    :ui="{
+                      label: 'font-black text-dimmed'
+                    }"
+                  ></UBadge>
+                  <UBadge
+                    v-for="name in model.names.slice(1)"
+                    :label="name"
+                    color="neutral"
+                    variant="outline"
+                    size="lg"
+                  ></UBadge>
+                </UFieldGroup>
+                <UButton
+                  v-for="link in model.links"
+                  :to="link"
+                  variant="soft"
+                  target="_blank"
+                  :label="urlToLabel(link)"
+                  trailing-icon="lucide:arrow-up-right"
+                ></UButton>
+              </div>
+            </template>
+          </UPopover> -->
+        </div>
+        <div class="flex justify-end gap-2">
+          <UButton
+            variant="ghost"
+            color="neutral"
+            v-for="button in [
+              {
+                icon: 'lucide:chevron-left',
+                click: () => moveCurrentRefBy(-1),
+              },
+              {
+                icon: 'lucide:chevron-right',
+                click: () => moveCurrentRefBy(1),
+              },
+              {
+                icon: 'lucide:x',
+                click: () => {
+                  modalOpen = false
+                }
+              },
+            ]"
+            v-bind="button"
+            @click="button.click"
+          ></UButton>
+        </div>
+      </template>
+      <template #body>
+        <div class="relative h-full">
+          <iframe :src='`https://www.redgifs.com/ifr/${currentRef?.title}`' frameBorder='0' scrolling='no' width='100%' height='100%' style='position:absolute; top:0; left:0;' allowFullScreen></iframe>
+        </div>
+      </template>
+    </UModal>
+  </ClientOnly>
   <div class="fixed flex justify-end bottom-0 right-0 p-4 sm:w-1/3 w-full">
     <ProsePre
       :ui="{
