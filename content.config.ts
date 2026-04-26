@@ -12,6 +12,7 @@ export default defineContentConfig({
         tags: z.array(z.string()).optional(),
         date: z.string(),
         rating: z.number().optional(),
+        hidden: z.boolean().default(false)
       })
     }),
     models: defineCollection({

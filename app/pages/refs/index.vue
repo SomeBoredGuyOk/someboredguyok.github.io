@@ -112,7 +112,7 @@ const filteredRefs = computed(() => {
     return selectedTags.value.every(tag => refTags(ref).includes(tag))
   }).sort((a, b) => {
     return refRating(b) - refRating(a)
-  }) || []
+  }).filter(ref => (route.query.showHidden) ? true : !ref.hidden) || []
 })
 function moveCurrentRefBy(by: number) {
   if (currentRef.value && filteredRefs.value) {
