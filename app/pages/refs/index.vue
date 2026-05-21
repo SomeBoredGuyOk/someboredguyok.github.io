@@ -45,7 +45,7 @@ const { data: refs } = await useAsyncData("all-refs", () => {
   return queryCollection("refs").order("date", "DESC").all()
 })
 const { data: models } = await useAsyncData("all-models", () => {
-  return queryCollection("models").order("names", "DESC").all()
+  return queryCollection("models").order("nameLower", "ASC").all()
 })
 const refMap = ref(new Map<RefsCollectionItem|undefined, boolean>(refs.value?.map(ref => [ref, false])))
 const currentRef = ref<RefsCollectionItem>()
@@ -84,7 +84,11 @@ function refRating(ref: RefsCollectionItem) {
   if (array.length > 0) return array.reduce((prev, curr) => prev + curr, 0) / array.length
   return 0
 }
+const filteredModels = computed(() => {
+  return models.value?.filter(model => unhiddenRefs.value.flatMap(ref => ref.models).includes(model.title))
+})
 const selectedTags = ref<string[]>([])
+const selectedModels = ref<string[]>([])
 const bookend = '```'
 const selectedRefs = computed(() => {
   return Array.from((refMap.value.entries())).filter(entry => entry[0] != undefined).filter(entry => entry[1]).map(entry => entry[0]) as RefsCollectionItem[]
@@ -106,13 +110,21 @@ const exportText = computed(() => {
 const breakpoints = useBreakpoints(breakpointsTailwind)
 // Returns true if screen is smaller than 'sm' (640px)
 const isMobile = breakpoints.smaller('sm') 
+const unhiddenRefs = computed(() => {
+  return refs.value?.filter(ref => (route.query.showHidden) ? true : !ref.hidden) || []
+})
 const filteredRefs = computed(() => {
-  return refs.value?.filter(ref => {
+  return unhiddenRefs.value?.filter(ref => {
     
     return selectedTags.value.every(tag => refTags(ref).includes(tag))
   }).sort((a, b) => {
     return refRating(b) - refRating(a)
-  }).filter(ref => (route.query.showHidden) ? true : !ref.hidden) || []
+  }).filter(ref => {
+    if (selectedModels.value.length == 0) return true
+    return refModels(ref).some((model => {
+      return selectedModels.value.includes(model?.names[0] || '')
+    }))
+  }) || []
 })
 function moveCurrentRefBy(by: number) {
   if (currentRef.value && filteredRefs.value) {
@@ -157,15 +169,21 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
 <template>
   <UMain>
     <div class="flex flex-col gap-4 py-4 mb-54">
-      <div class="flex justify-center">
+      <div class="flex flex-wrap gap-2 px-4 *:grow">
         <UInputMenu
           :items="tags"
           multiple
-          class="w-full sm:w-auto mx-4"
           v-model="selectedTags"
           icon="lucide:hash"
         ></UInputMenu>
+        <UInputMenu
+          :items="filteredModels?.map(model => model.names[0] as string)"
+          icon="lucide:users"
+          multiple
+          v-model="selectedModels"
+        ></UInputMenu>
       </div>
+
       <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8">
         <div v-for="ref in filteredRefs"
           class="aspect-3/4 overflow-hidden flex justify-center relative group"

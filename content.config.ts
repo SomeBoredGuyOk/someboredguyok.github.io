@@ -20,11 +20,15 @@ export default defineContentConfig({
       source: 'models/*.yaml',
       schema: z.object({
         names: z.array(z.string()),
+        nameLower: z.string().optional(),
         tags: z.array(z.string()).optional(),
         links: z.array(z.string()).optional(),
         images: z.array(z.string()).optional(),
         rating: z.number().optional(),
-      })
+      }).transform((data) => ({
+        ...data,
+        nameLower: data.names[0].toLowerCase()
+      }))
     })
   }
 })
