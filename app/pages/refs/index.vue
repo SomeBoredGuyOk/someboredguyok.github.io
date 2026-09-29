@@ -183,7 +183,20 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
           v-model="selectedModels"
         ></UInputMenu>
       </div>
-
+      <!-- <CheckboxSpectrum :spectrums="[
+        {
+          end1: 'Babygirl',
+          end2: 'Mommy',
+          value: 1,
+        },
+        {
+          end1: 'Innocent',
+          end2: 'Devious',
+          value: 6,
+        },
+      ]">
+        
+      </CheckboxSpectrum> -->
       <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8">
         <div v-for="ref in filteredRefs"
           class="aspect-3/4 overflow-hidden flex justify-center relative group"
@@ -291,7 +304,18 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
                   selectedTags.splice(selectedTags.indexOf(tag), 1)
                 }
               }
-            } as DropdownMenuItem)))
+            } as DropdownMenuItem))),
+            {
+              type: 'separator'
+            },
+            {
+              type: 'label',
+              label: 'Vibe',
+            },
+            {
+              slot: 'vibe' as const,
+              type: 'label',
+            }
           ] as DropdownMenuItem[])"
         >
           <UButton
@@ -327,6 +351,36 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
                 </div>
               </UBadge>
             </div>
+          </template>
+          <template #vibe>
+            <CheckboxSpectrum :spectrums="[
+              // {
+              //   end1: 'Cute',
+              //   end2: 'Hot',
+              //   value1: model.cute ?? 0,
+              //   value2: model.hot ?? 0,
+              // },
+              {
+                end1: 'Babygirl',
+                end2: 'Mommy',
+                value1: model.babygirl ?? 0,
+                value2: model.mommy ?? 0,
+              },
+              {
+                end1: 'Innocent',
+                end2: 'Devious',
+                value1: model.innocent ?? 0,
+                value2: model.devious ?? 0,
+              },
+              {
+                end1: 'Skinny',
+                end2: 'Chubby',
+                value1: model.skinny ?? 0,
+                value2: model.chubby ?? 0,
+              },
+            ]">
+              
+            </CheckboxSpectrum>
           </template>
           <!-- <template #tag-trailing>
             <div class="flex text-muted items-center gap-1 group-hover:opacity-100 sm:opacity-0 transition-opacity">
