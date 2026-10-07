@@ -2,6 +2,7 @@
 import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+import type { RefItem } from '../../utils/sheets';
 const route = useRoute()
 onMounted(() => {
   // await nextTick()
@@ -44,9 +45,11 @@ const searchId = computed<string>({
 const { data: refs } = await useAsyncData("all-refs", () => {
   return queryCollection("refs").order("date", "DESC").all()
 })
+const { items: refs2, pending, error } = useSheetData(RefSchema, "Refs")
 const { data: models } = await useAsyncData("all-models", () => {
   return queryCollection("models").order("nameLower", "ASC").all()
 })
+const { items: models2 } = useSheetData(ModelSchema, "Models")
 const refMap = ref(new Map<RefsCollectionItem|undefined, boolean>(refs.value?.map(ref => [ref, false])))
 const currentRef = ref<RefsCollectionItem>()
 const modalOpen1 = ref(false)
@@ -168,6 +171,8 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
 </script>
 <template>
   <UMain>
+    {{ refs2 }}
+    {{ models2.filter((model) => model.id != '') }}
     <div class="flex flex-col gap-4 py-4 mb-54">
       <div class="flex flex-wrap gap-2 px-4 *:grow">
         <UInputMenu
