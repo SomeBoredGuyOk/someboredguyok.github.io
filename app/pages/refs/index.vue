@@ -81,6 +81,7 @@ function refRating(ref: RefsCollectionItem) {
   refModels(ref).forEach(model => {
     if (model?.rating) array.push(model.rating)
   })
+  return Math.max(...array)
   if (array.length > 0) return array.reduce((prev, curr) => prev + curr, 0) / array.length
   return 0
 }
