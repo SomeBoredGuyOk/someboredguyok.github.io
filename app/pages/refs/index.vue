@@ -169,6 +169,20 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
 </script>
 <template>
   <UMain>
+    <!-- {{ (refs||[]).map(({title, models, tags, date, rating, hidden}) => ({
+      id: title,
+      models,
+      tags: tags || [],
+      date,
+      hidden,
+    })) }} -->
+    <!-- {{ (models||[]).map(({title, names, links, tags, rating, }) => ({
+      id: title,
+      names,
+      links: links||[],
+      tags,
+      rating,
+    })) }} -->
     <div class="flex flex-col gap-4 py-4 mb-54">
       <div class="flex flex-wrap gap-2 px-4 *:grow">
         <UInputMenu
