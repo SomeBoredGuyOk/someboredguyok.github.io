@@ -23,7 +23,9 @@ export const RefSchema = z.object({
   id: z.string(),
   date: z.string(), // Commas here stay as plain text strings!
   tags: commaDelimitedArray,             // Commas here automatically become a clean string[]
-  models: commaDelimitedArray          // Commas here automatically become a clean string[]
+  models: commaDelimitedArray,          // Commas here automatically become a clean string[]
+  rating: z.coerce.number().optional(),
+  hidden: z.coerce.boolean(),
 })
 export const ModelSchema = z.object({
   id: z.string(),

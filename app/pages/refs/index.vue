@@ -3,6 +3,7 @@ import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { RefItem } from '../../utils/sheets';
+import { queryCollection } from '#imports'
 const route = useRoute()
 onMounted(() => {
   // await nextTick()
@@ -10,7 +11,7 @@ onMounted(() => {
     const params = new URLSearchParams(window.location.search)
     const id = params.get('id')
     if (id != '') {
-      currentRef.value = refs.value?.find(({title}) => title == id)
+      currentRef.value = refs.value?.find(({id: title}) => title == id)
       console.log(id)
     }
   }, 100)
@@ -42,16 +43,16 @@ const searchId = computed<string>({
 //     console.log(hash)
 //   }
 // }, {immediate: true})
-const { data: refs } = await useAsyncData("all-refs", () => {
+const { data: refs2 } = await useAsyncData("all-refs", () => {
   return queryCollection("refs").order("date", "DESC").all()
 })
-const { items: refs2, pending, error } = useSheetData(RefSchema, "Refs")
-const { data: models } = await useAsyncData("all-models", () => {
-  return queryCollection("models").order("nameLower", "ASC").all()
-})
-const { items: models2 } = useSheetData(ModelSchema, "Models")
-const refMap = ref(new Map<RefsCollectionItem|undefined, boolean>(refs.value?.map(ref => [ref, false])))
-const currentRef = ref<RefsCollectionItem>()
+const { items: refs, pending, error } = useSheetData(RefSchema, "Refs")
+// const { data: models } = await useAsyncData("all-models", () => {
+//   return queryCollection("models").order("nameLower", "ASC").all()
+// })
+const { items: models } = useSheetData(ModelSchema, "Models")
+const refMap = ref(new Map<RefItem|undefined, boolean>(refs.value?.map(ref => [ref, false])))
+const currentRef = ref<RefItem>()
 const modalOpen1 = ref(false)
 const modalOpen = computed<boolean>({
   get() {
@@ -63,22 +64,22 @@ const modalOpen = computed<boolean>({
     }
   }
 })
-function viewRef(ref: RefsCollectionItem) {
+function viewRef(ref: RefItem) {
   currentRef.value = ref
   modalOpen.value = true
 }
 const tags = computed(() => {
   return [...new Set(refs.value?.flatMap(ref => refTags(ref)))].sort()
 })
-function refModels(ref: RefsCollectionItem) {
-  return ref.models?.map(model => models.value?.find(({title}) => title == model)) || []
+function refModels(ref: RefItem) {
+  return ref.models?.map(model => models.value?.find(({id}) => id == model)) || []
 }
-function refTags(ref: RefsCollectionItem) {
+function refTags(ref: RefItem) {
   const refTags = ref.tags || []
   refTags.push(...(refModels(ref).flatMap(model => model?.tags || [])))
   return [...new Set(refTags)]
 }
-function refRating(ref: RefsCollectionItem) {
+function refRating(ref: RefItem) {
   const array: number[] = []
   if (ref.rating) array.push(ref.rating)
   refModels(ref).forEach(model => {
@@ -88,7 +89,7 @@ function refRating(ref: RefsCollectionItem) {
   return 0
 }
 const filteredModels = computed(() => {
-  return models.value?.filter(model => unhiddenRefs.value.flatMap(ref => ref.models).includes(model.title))
+  return models.value?.filter(model => unhiddenRefs.value.flatMap(ref => ref.models).includes(model.id))
 })
 const selectedTags = ref<string[]>([])
 const selectedModels = ref<string[]>([])
@@ -106,7 +107,7 @@ const selectedRefs = computed(() => {
 const exportText = computed(() => {
   if (selectedRefs.value.length == 0) return `
 `
-  return selectedRefs.value.reduce((prev, curr, i) => prev + (i + 1) + '. ' + (curr.models?.map(model => models.value?.find(({title}) => title == model)?.names[0]).filter(model => model != undefined).join(', ') || '') + `
+  return selectedRefs.value.reduce((prev, curr, i) => prev + (i + 1) + '. ' + (curr.models?.map(model => models.value?.find(({id}) => id == model)?.names[0]).filter(model => model != undefined).join(', ') || '') + `
 ` + location.origin + '/refs?id=' + curr.title + `
 `, ``)
 })
@@ -131,7 +132,7 @@ const filteredRefs = computed(() => {
 })
 function moveCurrentRefBy(by: number) {
   if (currentRef.value && filteredRefs.value) {
-    const currentIndex = filteredRefs.value.findIndex(({title}) => title == currentRef.value?.title)
+    const currentIndex = filteredRefs.value.findIndex(({id}) => id == currentRef.value?.id)
     if (currentIndex > -1) {
       if (currentIndex + by == filteredRefs.value.length) currentRef.value = filteredRefs.value[0]
       else if (currentIndex + by == -1) currentRef.value = filteredRefs.value[filteredRefs.value.length - 1]
@@ -140,7 +141,7 @@ function moveCurrentRefBy(by: number) {
   }
 }
 const currentModels = computed(() => {
-  return models.value?.filter(({title}) => currentRef.value?.models?.includes(title)) || []
+  return models.value?.filter(({id}) => currentRef.value?.models?.includes(id)) || []
 })
 function urlToLabel(url: string) {
   const _url = new URL(url)
@@ -165,14 +166,20 @@ function urlToIcon(url: string) {
 }
 watch(currentRef, (newCurrentRef, oldCurrentRef) => {
   if (newCurrentRef != oldCurrentRef) {
-    searchId.value = newCurrentRef?.title || ''
+    searchId.value = newCurrentRef?.id || ''
   }
 })
 </script>
 <template>
   <UMain>
-    {{ refs2 }}
-    {{ models2.filter((model) => model.id != '') }}
+    {{ (refs2||[]).map(({title, models, tags, date}) => ({
+      id: title,
+      models,
+      tags,
+      date,
+    })) }}
+    <!-- {{ refs }}
+    {{ models.filter((model) => model.id != '') }} -->
     <div class="flex flex-col gap-4 py-4 mb-54">
       <div class="flex flex-wrap gap-2 px-4 *:grow">
         <UInputMenu
@@ -189,8 +196,8 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
         ></UInputMenu>
       </div>
 
-      <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8">
-        <div v-for="ref in filteredRefs"
+      <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-8 gap-1">
+        <div v-if="refs.length > 0" v-for="ref in filteredRefs"
           class="aspect-3/4 overflow-hidden flex justify-center relative group"
         >
           <div class=" transition-opacity absolute h-full w-full cursor-pointer group"
@@ -221,8 +228,9 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
               ></UCheckbox>
             </div>
           </div>
-          <img class=" object-cover w-full h-full absolute -z-10" :src="`https://media.redgifs.com/${ref.title}-mobile.jpg`" referrerpolicy="no-referrer">
+          <img class=" object-cover w-full h-full absolute -z-10" :src="`https://media.redgifs.com/${ref.id}-mobile.jpg`" referrerpolicy="no-referrer">
         </div>
+        <USkeleton v-else v-for="i in 40" class="rounded-none aspect-3/4 overflow-hidden flex justify-center relative"></USkeleton>
       </div>
     </div>
   </UMain>
@@ -414,7 +422,7 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
     </template>
     <template #body>
       <div class="relative h-full">
-        <iframe :src='`https://www.redgifs.com/ifr/${currentRef?.title}`' frameBorder='0' scrolling='no' width='100%' height='100%' style='position:absolute; top:0; left:0;' allowFullScreen :key="currentRef?.title"></iframe>
+        <iframe :src='`https://www.redgifs.com/ifr/${currentRef?.id}`' frameBorder='0' scrolling='no' width='100%' height='100%' style='position:absolute; top:0; left:0;' allowFullScreen :key="currentRef?.id"></iframe>
       </div>
     </template>
   </UModal>
