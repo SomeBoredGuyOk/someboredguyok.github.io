@@ -3,7 +3,6 @@ import type { RefsCollectionItem } from '@nuxt/content';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import type { RefItem } from '../../utils/sheets';
-import { queryCollection } from '#imports'
 const route = useRoute()
 onMounted(() => {
   // await nextTick()
