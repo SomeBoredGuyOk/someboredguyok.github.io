@@ -25,7 +25,11 @@ export const RefSchema = z.object({
   tags: commaDelimitedArray,             // Commas here automatically become a clean string[]
   models: commaDelimitedArray,          // Commas here automatically become a clean string[]
   rating: z.coerce.number().optional(),
-  hidden: z.coerce.boolean(),
+  hidden: z.string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.enum(['true', 'false']))
+  .transform((val) => val === 'true'),
 })
 export const ModelSchema = z.object({
   id: z.string(),

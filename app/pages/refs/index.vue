@@ -171,12 +171,15 @@ watch(currentRef, (newCurrentRef, oldCurrentRef) => {
 </script>
 <template>
   <UMain>
-    {{ (refs2||[]).map(({title, models, tags, date}) => ({
+    <!-- {{ (refs||[]).map(({title, models, tags, date}) => ({
       id: title,
       models,
       tags,
       date,
-    })) }}
+    })) }} -->
+    <!-- {{ filteredRefs }}
+    {{ unhiddenRefs }}
+    {{ models }} -->
     <!-- {{ refs }}
     {{ models.filter((model) => model.id != '') }} -->
     <div class="flex flex-col gap-4 py-4 mb-54">
